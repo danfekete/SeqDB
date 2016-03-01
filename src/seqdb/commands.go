@@ -96,7 +96,7 @@ func (s SeqPointer) Inc() uint64 {
 }
 
 func (s SeqPointer) Lock() {
-	s.lock.WaitForLock(s.BucketName)
+	s.lock.WaitAndSet(s.BucketName)
 }
 
 func (s SeqPointer) Unlock() {

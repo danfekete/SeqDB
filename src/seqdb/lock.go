@@ -22,6 +22,7 @@ func NewBucketLock() *BucketLocks {
  */
 func (b *BucketLocks) AddLock(s string) {
 	b.locks[s] = true
+	fmt.Println("Added lock:", s)
 }
 
 /**
@@ -29,6 +30,7 @@ func (b *BucketLocks) AddLock(s string) {
  */
 func (b *BucketLocks) RemoveLock(s string) {
 	b.locks[s] = false
+	fmt.Println("Removed lock:", s)
 }
 
 /**
@@ -48,7 +50,7 @@ func (b *BucketLocks) IsLocked(s string) bool {
 func (b *BucketLocks) WaitForLock(s string) error {
 
 	start := time.Now().Second()
-
+	fmt.Println("Check for lock:", s)
 	for b.IsLocked(s) {
 		// while the bucket is locked
 		if cur := time.Now().Second() - start; cur > TIMEOUT {
