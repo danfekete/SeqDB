@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	SEQDB_VERSION = "0.0.1"
+	SEQDB_VERSION = "0.0.2"
 	CONN_HOST = "localhost"
 	CONN_PORT = "3333"
 	CONN_TYPE = "tcp"

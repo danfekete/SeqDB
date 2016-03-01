@@ -10,26 +10,35 @@ import (
 
 var (
 	Db *bolt.DB
-	BucketLocks map[string]bool
+	Lock *BucketLocks = NewBucketLock()
 )
 
 
 func parse(s []string) (int,string) {
 	switch s[0] {
 	case "SET":
-		p := SeqPointer{s[1], s[2]}
+		p := SeqPointer{s[1], s[2], Lock}
+		p.Lock()
 		value, _ := strconv.ParseUint(s[3], 10, 64)
 		p.Set(value)
+		p.Unlock()
 		return 1,"OK\n"
+
 	case "GET":
-		p := SeqPointer{s[1], s[2]}
+		p := SeqPointer{s[1], s[2], Lock}
+		p.Lock()
 		v := p.Get()
 		fmt.Println("Getting", v)
+		p.Unlock()
 		return 1,fmt.Sprintf("%d\n", v)
+
 	case "INC":
-		p := SeqPointer{s[1], s[2]}
+		p := SeqPointer{s[1], s[2], Lock}
+		p.Lock()
 		v := p.Inc()
+		p.Unlock()
 		return 1,fmt.Sprintf("%d\n", v)
+
 	case "QUIT":
 		return -1,"OK\n"
 	}
@@ -46,6 +55,7 @@ func Handle(c net.Conn) error {
 	defer c.Close()
 
 	for {
+
 		buf := make([]byte, 65536)
 		n, err := c.Read(buf)
 

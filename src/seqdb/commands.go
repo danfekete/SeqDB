@@ -9,9 +9,11 @@ import (
 type SeqPointer struct {
 	BucketName string
 	SequenceName string
+	lock *BucketLocks
 }
 
 func (s SeqPointer) Set(v uint64) {
+
 	Db.Update(func(tx *bolt.Tx) error {
 
 		bucket, err := tx.CreateBucketIfNotExists([]byte(s.BucketName))
@@ -31,6 +33,7 @@ func (s SeqPointer) Set(v uint64) {
 
 		return nil
 	})
+
 }
 
 func (s SeqPointer) Get() uint64 {
@@ -90,4 +93,12 @@ func (s SeqPointer) Inc() uint64 {
 	})
 
 	return val
+}
+
+func (s SeqPointer) Lock() {
+	s.lock.WaitForLock(s.BucketName)
+}
+
+func (s SeqPointer) Unlock() {
+	s.lock.RemoveLock(s.BucketName)
 }
