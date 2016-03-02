@@ -7,6 +7,9 @@ import (
 	//"encoding/json"
 	"seqdb"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 const (
@@ -27,6 +30,12 @@ func main() {
 	fmt.Println("SeqDB v.", SEQDB_VERSION)
 	fmt.Println("Written by Daniel Fekete <daniel.fekete@voov.hu>")
 
+	signalCh := make(chan os.Signal)
+	runApp := true
+
+	signal.Notify(signalCh, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM)
+
+	// TODO: make the database file variable based on nodename
 	db, err := bolt.Open("seq.db", 0600, nil)
 
 	if err != nil {
@@ -46,6 +55,18 @@ func main() {
 	for {
 		// Yummy infinte loop
 
+		// check for terminate signals
+		select {
+		case <- signalCh:
+			fmt.Println("Interrupt signal received")
+			runApp = false
+		default:
+		}
+
+		if !runApp {
+			break
+		}
+
 		conn, err := l.Accept()
 
 		if err != nil {
@@ -54,4 +75,6 @@ func main() {
 
 		go seqdb.Handle(conn)
 	}
+
+	log.Println("Terminating SeqDB")
 }
