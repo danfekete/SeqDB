@@ -6,6 +6,7 @@ import (
 	"strings"
 	"github.com/boltdb/bolt"
 	"strconv"
+	"log"
 )
 
 var (
@@ -28,7 +29,6 @@ func parse(s []string) (int,string) {
 		p := SeqPointer{s[1], s[2], Lock}
 		p.Lock()
 		v := p.Get()
-		fmt.Println("Getting", v)
 		p.Unlock()
 		return 1,fmt.Sprintf("%d\n", v)
 
@@ -51,7 +51,7 @@ func SetDB(db *bolt.DB) {
 }
 
 func Handle(c net.Conn) error {
-	fmt.Println("Connection established", c.RemoteAddr())
+	log.Printf("Connection established %s -> %s", c.RemoteAddr(), c.LocalAddr())
 	defer c.Close()
 
 	for {
@@ -71,6 +71,6 @@ func Handle(c net.Conn) error {
 		if ret == -1 {break}
 	}
 
-	fmt.Println("Connection closed", c.RemoteAddr())
+	log.Println("Connection closed", c.RemoteAddr())
 	return nil
 }

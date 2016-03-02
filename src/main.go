@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	"net"
-	"os"
 	"github.com/boltdb/bolt"
 	//"encoding/json"
 	"seqdb"
+	"log"
 )
 
 const (
@@ -30,16 +30,14 @@ func main() {
 	db, err := bolt.Open("seq.db", 0600, nil)
 
 	if err != nil {
-		fmt.Println("Cannot connect to database!")
-		os.Exit(1)
+		log.Fatalf("Cannot connect to database: %v\r\n", err)
 	}
 
 	seqdb.SetDB(db)
 
 	l, err := net.Listen(CONN_TYPE, "localhost:3333")
 	if err != nil {
-		fmt.Println("Cannot listen on port")
-		os.Exit(1)
+		log.Fatalf("Cannot listen on %s:%d: %v\r\n", CONN_HOST, CONN_PORT, err)
 	}
 
 	defer l.Close()
@@ -49,9 +47,9 @@ func main() {
 		// Yummy infinte loop
 
 		conn, err := l.Accept()
+
 		if err != nil {
-			fmt.Println("Error accepting: ", err.Error())
-			os.Exit(1)
+			log.Fatalf("Error when accepting connection %v\r\n", err)
 		}
 
 		go seqdb.Handle(conn)

@@ -2,7 +2,8 @@ package seqdb
 
 import (
 	"time"
-	"fmt"
+	"log"
+	"errors"
 )
 
 const TIMEOUT=10
@@ -22,15 +23,12 @@ func NewBucketLock() *BucketLocks {
  */
 func (b *BucketLocks) AddLock(s string) {
 	b.locks[s] = true
-	fmt.Println("Added lock:", s)
 }
-
 /**
 	Unlock a bucket
  */
 func (b *BucketLocks) RemoveLock(s string) {
 	b.locks[s] = false
-	fmt.Println("Removed lock:", s)
 }
 
 /**
@@ -50,13 +48,13 @@ func (b *BucketLocks) IsLocked(s string) bool {
 func (b *BucketLocks) WaitForLock(s string) error {
 
 	start := time.Now().Second()
-	fmt.Println("Check for lock:", s)
 	for b.IsLocked(s) {
 		// while the bucket is locked
 		if cur := time.Now().Second() - start; cur > TIMEOUT {
 			// we have waited for too long
 			// break
-			return fmt.Errorf("Lock timed out for %s bucket", s)
+			log.Printf("Lock timed out for bucket %s", s)
+			return errors.New("Lock timeout")
 		}
 		// sleep tenth of a second and then check again
 		time.Sleep(100 * time.Millisecond)
