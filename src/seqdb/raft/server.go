@@ -20,7 +20,7 @@ type RaftServer struct {
 func NewRaftServer() *RaftServer {
 	return &RaftServer{
 		currentTerm:0,
-		votedFor:nil,
+		votedFor:-1,
 		commitIndex:0,
 		lastApplied:0,
 		nextIndex:make([]int, 0),

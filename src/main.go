@@ -11,6 +11,7 @@ import (
 	"os/signal"
 	"syscall"
 	"flag"
+	"seqdb/raft"
 )
 
 /*
@@ -39,6 +40,8 @@ func main() {
 	fmt.Println("Written by Daniel Fekete <daniel.fekete@voov.hu>")
 	flag.Parse()
 
+
+
 	signalCh := make(chan os.Signal)
 
 	signal.Notify(signalCh, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM)
@@ -53,6 +56,9 @@ func main() {
 	seqdb.SetDB(db)
 
 	laddr, err := net.ResolveTCPAddr(CONN_TYPE, *host)
+
+	discovery := raft.NewServiceDiscovery()
+	discovery.StartDiscovery(laddr.IP.String(), fmt.Sprintf("%d", laddr.Port))
 
 	l, err := net.ListenTCP(CONN_TYPE, laddr)
 	log.Printf("Listening on %v\r\n", laddr)
