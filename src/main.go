@@ -31,7 +31,6 @@ func main() {
 	fmt.Println("Written by Daniel Fekete <daniel.fekete@voov.hu>")
 
 	signalCh := make(chan os.Signal)
-	runApp := true
 
 	signal.Notify(signalCh, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM)
 
@@ -44,37 +43,17 @@ func main() {
 
 	seqdb.SetDB(db)
 
-	l, err := net.Listen(CONN_TYPE, "localhost:3333")
-	if err != nil {
-		log.Fatalf("Cannot listen on %s:%d: %v\r\n", CONN_HOST, CONN_PORT, err)
-	}
+	laddr, err := net.ResolveTCPAddr(CONN_TYPE, fmt.Sprintf("%s:%s", CONN_HOST, CONN_PORT))
 
-	defer l.Close()
-	defer db.Close()
+	l, err := net.ListenTCP(CONN_TYPE, laddr)
 
-	for {
-		// Yummy infinte loop
+	service := seqdb.NewService()
+	go service.Serve(l)
 
-		// check for terminate signals
-		select {
-		case <- signalCh:
-			fmt.Println("Interrupt signal received")
-			runApp = false
-		default:
-		}
+	<-signalCh
 
-		if !runApp {
-			break
-		}
-
-		conn, err := l.Accept()
-
-		if err != nil {
-			log.Fatalf("Error when accepting connection %v\r\n", err)
-		}
-
-		go seqdb.Handle(conn)
-	}
+	db.Close()
+	service.Stop()
 
 	log.Println("Terminating SeqDB")
 }

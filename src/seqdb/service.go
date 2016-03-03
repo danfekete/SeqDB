@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"time"
+	"strings"
 )
 
 type Service struct {
@@ -74,22 +75,30 @@ func (s *Service) serve(conn *net.TCPConn) {
 		default:
 		}
 
-		conn.SetDeadline(time.Now().Add(1e9))
+		conn.SetDeadline(time.Now().Add(10*1e9))
 
 		buf := make([]byte, 4096)
 
-		if _, err := conn.Read(buf); nil != err {
-			if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {
-				continue
-			}
-			log.Println(err)
-			return
+		n, err := conn.Read(buf)
+
+		if err != nil {
+			log.Printf("Cannot read from buffer: %v\r\n", err)
+
 		}
 
-		if _, err := conn.Write(buf); nil != err {
-			log.Println(err)
-			return
-		}
+		s := strings.Trim(string(buf[:n]), " \r\n")
 
+		// Parse the command
+		code, response := ParseCommand(s)
+
+		// QUIT command was issued
+		if code == -1 { break }
+
+		// Write response
+		_, err = conn.Write([]byte(response))
+
+		if err != nil {
+			log.Printf("Error writing buffer: %v\r\n", err)
+		}
 	}
 }

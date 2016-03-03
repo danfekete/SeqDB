@@ -59,7 +59,7 @@ func SetDB(db *bolt.DB) {
 	Db = db
 }
 
-func ParseCommand(cmd string) {
+func ParseCommand(cmd string) (int, string) {
 	s := strings.Trim(cmd, " \r\n")
 	r, err := regexp.Compile("^([A-Z]{3,6})( [-_A-Za-z0-9]+)*$")
 
@@ -70,7 +70,7 @@ func ParseCommand(cmd string) {
 	// check for command validity
 	if r.MatchString(s) == false {
 		// the command is malformed
-		//c.Write([]byte("INVALID COMMAND\n"))
+		return 0, "INVALID COMMAND"
 	}
 
 	commands := strings.Split(s, " ")
