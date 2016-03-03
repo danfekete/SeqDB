@@ -1,5 +1,9 @@
 package seqdb
 
+/*
+	Based on http://rcrowley.org/articles/golang-graceful-stop.html
+ */
+
 import (
 	"sync"
 	"log"
