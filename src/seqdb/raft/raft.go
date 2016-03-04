@@ -1,11 +1,25 @@
 package raft
 
+type RequestVoteArgs struct {
+	term int
+	candidateId int
+	lastLogIndex int
+	lastLogTerm int
+}
+
+type RequestVoteReply struct {
+	currentTerm int
+	granted bool
+}
+
 type Raft interface {
-	RequestVote(term int, candidateId int, lastLogIndex int, lastLogTerm int) bool
+	RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) error
 	AppendEntries(term int, leaderId int, prevLogIndex int, prevLogTerm int, entries string, leaderCommit int) (currentTerm int, success bool)
 }
 
 type RaftServer struct {
+	myId int
+
 	currentTerm int // latest term server has seen
 	votedFor int // candidateId that received vote in current term (or null if none)
 	// log[] // log entries; each entry contains command for state machine, and term when entry  was received by leader (first index is 1)
